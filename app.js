@@ -6,13 +6,18 @@ const { validateSchema } = require("./validateschema")
 const ExpressError = require("./utilities/expresserror");
 const mongoose = require("mongoose");
 const methodOverride = require("method-override");
-const { validate } = require("./models/yelpcamp");
 const session = require("express-session");
 const flash = require("connect-flash");
+const passport = require("passport");
+const LocalStrategy = require("passport-local").Strategy;
+
 
 //defining routes
+
 const allcampground = require("./routes/campground")
 const reviewRoute = require("./routes/reviewRoute");
+const userRoute = require("./routes/authuser");
+const user = require("./models/user");
 
 mongoose.connect('mongodb://localhost:27017/sudeepdb',
     {
@@ -36,7 +41,9 @@ app.set("views", path.join(__dirname, "views"))
 
 app.use(express.urlencoded({ extended: true }))
 app.use(methodOverride("_method"));
-app.use(express.static("public"))
+app.use(express.static(path.join(__dirname, 'public')))
+
+
 
 const sessionConfig = {
     secret: "secret message",
@@ -52,7 +59,22 @@ const sessionConfig = {
 app.use(session(sessionConfig))
 app.use(flash());
 
+
+
+
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(user.authenticate()));
+
+passport.serializeUser(user.serializeUser());
+passport.deserializeUser(user.deserializeUser());
+
+
+
+
+
 app.use((req, res, next) => {
+    res.locals.currentUser = req.user;
     res.locals.success = req.flash("success");
     res.locals.error = req.flash("error");
     next();
@@ -61,6 +83,7 @@ app.use((req, res, next) => {
 //routes configuration
 app.use("/allcampground", allcampground)
 app.use("/allcampground/:id/review", reviewRoute)
+app.use("/", userRoute);
 
 
 app.get("/", (req, res) => {

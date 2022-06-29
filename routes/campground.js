@@ -3,13 +3,14 @@ const router = express.Router();
 const catchAsync = require("../utilities/catcherror");
 const ExpressError = require("../utilities/expresserror");
 const CampingGround = require("../models/yelpcamp");
+const { isLoggedIn } = require("../middleware");
 
 router.get("/", async (req, res) => {
     const allcamp = await CampingGround.find({});
     res.render("campground/index", { allcamp })
 })
 
-router.get("/new", (req, res) => {
+router.get("/new", isLoggedIn, (req, res) => {
     res.render("campground/new");
 })
 
