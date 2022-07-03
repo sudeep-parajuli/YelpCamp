@@ -30,17 +30,34 @@ const seedDB = async () => {
         const random1000 = Math.floor(Math.random() * 1000);
         const price = Math.floor(Math.random() * 20) + 10;
         const camp = new Camping({
+            author: "62b9a7a19a9a418b49f3b534",
             location: `${cities[random1000].city}, ${cities[random1000].state}`,
             title: `${sample(descriptors)} ${sample(places)}`,
             description: "Hello everyone, this is the defult image description",
             price: price,
-            image: "https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/camping-ideas-1561136670.jpg"
+            geometry: {
+                type: "Point",
+                coordinates: [
+                    cities[random1000].longitude,
+                    cities[random1000].latitude
+                ]
+            },
+            images: [
+                {
+                    url: 'https://res.cloudinary.com/dbkbbjzl6/image/upload/v1656742736/YelpCamp/zjwo8nsizx5iukhxcccd.jpg',
+                    filename: 'YelpCamp/zjwo8nsizx5iukhxcccd'
+                },
+                {
+                    url: 'https://res.cloudinary.com/dbkbbjzl6/image/upload/v1656588987/YelpCamp/m49laynv7vuc59eg0wvj.jpg',
+                    filename: 'YelpCamp/m49laynv7vuc59eg0wvj'
+                }
+            ]
         })
         await camp.save();
     }
 }
 
 
-// seedDB().then(() => {
-//     mongoose.connection.close();
-// })
+seedDB().then(() => {
+    mongoose.connection.close();
+})

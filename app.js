@@ -1,3 +1,8 @@
+if (process.env.NODE_ENV !== "production") {
+    require('dotenv').config();
+}
+
+
 const express = require("express");
 const app = express();
 const path = require("path")
@@ -10,23 +15,38 @@ const session = require("express-session");
 const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
+const user = require("./models/user");
 
+const MongoStore = require("connect-mongo");
+const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/sudeepdb';
+
+
+// app.use(session({
+//     secret: 'foo',
+//     store: MongoDBStore.create(options)
+// }));
 
 //defining routes
 
 const allcampground = require("./routes/campground")
 const reviewRoute = require("./routes/reviewRoute");
 const userRoute = require("./routes/authuser");
-const user = require("./models/user");
 
-mongoose.connect('mongodb://localhost:27017/sudeepdb',
-    {
-        // useNewUrlParser: true,
-        // useCreateIndex: true,
-        // useUnifiedTopology: true
-    }
-);
 
+// mongoose.connect('mongodb://localhost:27017/sudeepdb',
+//     {
+//         // useNewUrlParser: true,
+//         // useCreateIndex: true,
+//         // useUnifiedTopology: true
+//     }
+// );
+
+mongoose.connect(dbUrl, {
+    // useNewUrlParser: true,
+    // useCreateIndex: true,
+    // useUnifiedTopology: true,
+    // useFindAndModify: false
+});
 
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
@@ -43,9 +63,18 @@ app.use(express.urlencoded({ extended: true }))
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, 'public')))
 
+const secret = process.env.SECRET || 'thisshouldbeabettersecret!';
+
+const store = new MongoStore({
+    mongoUrl: dbUrl,
+    secret,
+    touchAfter: 24 * 60 * 60
+});
+
 
 
 const sessionConfig = {
+    store,
     secret: "secret message",
     resave: false,
     saveUninitialized: true,

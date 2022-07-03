@@ -2,12 +2,37 @@ const mongoose = require("mongoose");
 const Review = require("./review")
 const Schema = mongoose.Schema;
 
+const ImageSchema = new Schema({
+    url: String,
+    filename: String
+});
+
+
+ImageSchema.virtual('thumbnail').get(function () {
+    return this.url.replace('/upload', '/upload/w_200');
+});
+
 const CampgroundSchema = new Schema({
     title: String,
     price: Number,
+    geometry: {
+        type: {
+            type: String,
+            enum: ['Point'],
+            required: true
+        },
+        coordinates: {
+            type: [Number],
+            required: true
+        }
+    },
     description: String,
     location: String,
-    image: String,
+    images: [ImageSchema],
+    author: {
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    },
     reviews: [
         {
             type: Schema.Types.ObjectId,
@@ -26,4 +51,4 @@ CampgroundSchema.post("findOneAndDelete", async function (doc) {
     }
 })
 
-module.exports = mongoose.model("yelpcamp", CampgroundSchema);
+module.exports = mongoose.model("Yelpcamp", CampgroundSchema);
